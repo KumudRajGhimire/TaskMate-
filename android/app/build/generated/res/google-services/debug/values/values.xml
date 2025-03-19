@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">495333670318</string>
+    <string name="google_api_key" translatable="false">AIzaSyCt6eTBVp3wDmG8MRR-uQFfK2cgqiADnvM</string>
+    <string name="google_app_id" translatable="false">1:495333670318:android:dff32d634935f221b79c3f</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCt6eTBVp3wDmG8MRR-uQFfK2cgqiADnvM</string>
+    <string name="google_storage_bucket" translatable="false">taskmate-2603f.firebasestorage.app</string>
+    <string name="project_id" translatable="false">taskmate-2603f</string>
+</resources>
