@@ -1,12 +1,57 @@
-// lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'theme_provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _username = 'Loading...';
+  String _location = 'Loading...';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final userData = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (userData.exists) {
+          setState(() {
+            _username = userData.data()?['username'] ?? 'Username not found';
+            _location = userData.data()?['location'] ?? 'Location not found';
+          });
+        } else {
+          setState(() {
+            _username = 'User data not found';
+            _location = 'User data not found';
+          });
+        }
+      } catch (e) {
+        print('Error fetching user data: $e');
+        setState(() {
+          _username = 'Error loading data';
+          _location = 'Error loading data';
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(title: Text('Profile')),
       body: Padding(
@@ -17,25 +62,32 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: CircleAvatar(
                 radius: 50,
-                child: Icon(Icons.person, size: 50),
+                backgroundImage: user?.photoURL != null
+                    ? NetworkImage(user!.photoURL!)
+                    : null,
+                child:
+                user?.photoURL == null ? Icon(Icons.person, size: 50) : null,
               ),
             ),
             SizedBox(height: 16),
-            Center(child: Text('User Display Name', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-            SizedBox(height: 16),
-            Row(
-              children: <Widget>[
-                Text('Status: '),
-                Icon(Icons.circle, color: Colors.green, size: 16),
-              ],
+            Center(
+                child: Text(_username,
+                    style:
+                    TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+            SizedBox(height: 24),
+            ListTile(
+              leading: Icon(Icons.email),
+              title: Text(user?.email ?? 'user@example.com'),
             ),
-            SizedBox(height: 16),
-            Text('Email: user@example.com'),
-            SizedBox(height: 8),
-            Text('Location: Placeholder Location'),
-            SizedBox(height: 8),
-            Text('Skills: Placeholder Skills'),
-            SizedBox(height: 16),
+            ListTile(
+              leading: Icon(Icons.location_on),
+              title: Text('Location: $_location'),
+            ),
+            ListTile(
+              leading: Icon(Icons.stars),
+              title: Text('Skills: Placeholder Skills'),
+            ),
+            SizedBox(height: 24),
             ElevatedButton(
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
@@ -48,9 +100,13 @@ class ProfileScreen extends StatelessWidget {
               children: <Widget>[
                 Text('Theme:'),
                 IconButton(
-                  icon: Icon(Provider.of<ThemeProvider>(context).themeMode == ThemeMode.light ? Icons.light_mode : Icons.dark_mode),
+                  icon: Icon(Provider.of<ThemeProvider>(context).themeMode ==
+                      ThemeMode.light
+                      ? Icons.light_mode
+                      : Icons.dark_mode),
                   onPressed: () {
-                    Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+                    Provider.of<ThemeProvider>(context, listen: false)
+                        .toggleTheme();
                   },
                 ),
               ],
