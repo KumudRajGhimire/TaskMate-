@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main_screen.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
 
 class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
   @override
   _SignupScreenState createState() => _SignupScreenState();
 }
@@ -23,26 +27,18 @@ class _SignupScreenState extends State<SignupScreen> {
       if (_passwordController.text == _confirmPasswordController.text) {
         try {
           final userCredential = await _auth.createUserWithEmailAndPassword(
-            email: _emailController.text,
+            email: _emailController.text.trim(),
             password: _passwordController.text,
           );
-          print('User UID: ${userCredential.user!.uid}');
-
           await _firestore.collection('users').doc(userCredential.user!.uid).set({
-            'username': _usernameController.text,
-            'location': _locationController.text,
-            'email': _emailController.text,
-          }).then((_) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => MainScreen()),
-            );
-          }).catchError((error) {
-            print('Firestore write error: $error');
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to save user data: $error')),
-            );
+            'username': _usernameController.text.trim(),
+            'location': _locationController.text.trim(),
+            'email': _emailController.text.trim(),
           });
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
         } on FirebaseAuthException catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Signup failed: ${e.message}')),
@@ -62,51 +58,124 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      appBar: AppBar(title: Text('Signup')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email', icon: Icon(Icons.email)),
-                validator: (value) => value!.isEmpty ? 'Enter email' : null,
-              ),
-              TextFormField(
-                controller: _usernameController,
-                decoration: InputDecoration(labelText: 'Username', icon: Icon(Icons.person)),
-                validator: (value) => value!.isEmpty ? 'Enter username' : null,
-              ),
-              TextFormField(
-                controller: _locationController,
-                decoration: InputDecoration(labelText: 'Location', icon: Icon(Icons.location_on)),
-                validator: (value) => value!.isEmpty ? 'Enter location' : null,
-              ),
-              TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password', icon: Icon(Icons.lock)),
-                obscureText: true,
-                validator: (value) => value!.isEmpty ? 'Enter password' : null,
-              ),
-              TextFormField(
-                controller: _confirmPasswordController,
-                decoration: InputDecoration(labelText: 'Confirm Password', icon: Icon(Icons.lock)),
-                obscureText: true,
-                validator: (value) => value!.isEmpty ? 'Confirm password' : null,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(onPressed: _signup, child: Text('Signup')),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('Already have an account? Login'),
-              ),
-            ],
+      backgroundColor: theme.isDarkMode ? theme.darkTheme.scaffoldBackgroundColor : theme.lightTheme.scaffoldBackgroundColor,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Center(
+                  child: Image.asset(
+                    'skilltrade.png', // Replace with your actual path
+                    height: 80,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Email Address',
+                    labelStyle: TextStyle(color: theme.isDarkMode ? Colors.white70 : Colors.grey),
+                    filled: true,
+                    fillColor: theme.isDarkMode ? Colors.black87 : Colors.grey[200],
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: theme.isDarkMode ? theme.darkTheme.primaryColor : theme.lightTheme.primaryColor)),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty ? 'Please enter your email' : (value.contains('@') ? null : 'Please enter a valid email'),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _usernameController,
+                  style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    labelStyle: TextStyle(color: theme.isDarkMode ? Colors.white70 : Colors.grey),
+                    filled: true,
+                    fillColor: theme.isDarkMode ? Colors.black87 : Colors.grey[200],
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: theme.isDarkMode ? theme.darkTheme.primaryColor : theme.lightTheme.primaryColor)),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty ? 'Enter username' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _locationController,
+                  style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Location',
+                    labelStyle: TextStyle(color: theme.isDarkMode ? Colors.white70 : Colors.grey),
+                    filled: true,
+                    fillColor: theme.isDarkMode ? Colors.black87 : Colors.grey[200],
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: theme.isDarkMode ? theme.darkTheme.primaryColor : theme.lightTheme.primaryColor)),
+                  ),
+                  validator: (value) => value == null || value.trim().isEmpty ? 'Enter location' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    labelStyle: TextStyle(color: theme.isDarkMode ? Colors.white70 : Colors.grey),
+                    filled: true,
+                    fillColor: theme.isDarkMode ? Colors.black87 : Colors.grey[200],
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: theme.isDarkMode ? theme.darkTheme.primaryColor : theme.lightTheme.primaryColor)),
+                  ),
+                  validator: (value) => value == null || value.isEmpty ? 'Enter password' : (value.length < 6 ? 'Password must be at least 6 characters' : null),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    labelStyle: TextStyle(color: theme.isDarkMode ? Colors.white70 : Colors.grey),
+                    filled: true,
+                    fillColor: theme.isDarkMode ? Colors.black87 : Colors.grey[200],
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: theme.isDarkMode ? theme.darkTheme.primaryColor : theme.lightTheme.primaryColor)),
+                  ),
+                  validator: (value) => value == null || value.isEmpty ? 'Confirm password' : (value != _passwordController.text ? 'Passwords do not match' : null),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _signup,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.isDarkMode ? theme.darkTheme.primaryColor : theme.lightTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                  ),
+                  child: const Text('Sign Up', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text("Already have an account? ", style: TextStyle(color: theme.isDarkMode ? Colors.white70 : Colors.grey)),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: TextButton.styleFrom(foregroundColor: theme.isDarkMode ? theme.darkTheme.primaryColor : theme.lightTheme.primaryColor),
+                      child: const Text('Sign In', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

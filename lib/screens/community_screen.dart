@@ -114,7 +114,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 const SizedBox(width: 8.0),
                 ElevatedButton(
                   onPressed: _submitPost,
-                  child: const Icon(Icons.send),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.isDarkMode
+                        ? theme.darkTheme.primaryColor
+                        : theme.lightTheme.primaryColor,
+                  ),
+                  child: const Icon(Icons.send, color: Colors.white),
                 ),
               ],
             ),
@@ -150,7 +155,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                         Text(post.content),
                         const SizedBox(height: 16.0),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _buildInteractionButton(
                               icon: Icons.arrow_upward,
@@ -165,10 +170,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             _buildInteractionButton(
                               icon: Icons.comment,
                               count: post.commentCount,
-                              label: 'Comment',
+                              label: '1 comment', // Hardcoded for the example
                               onTap: () => _viewComments(index),
                             ),
-                            // Add other interaction buttons (Share, Save, etc.)
+                            const Icon(Icons.bookmark_border), // Example: Bookmark
                           ],
                         ),
                       ],

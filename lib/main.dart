@@ -12,10 +12,12 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(const MyApp()); // Added const here
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key}); // Added const constructor
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<ThemeProvider>(
@@ -24,23 +26,23 @@ class MyApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             title: 'TaskMate',
-            theme: ThemeData.light(),
-            darkTheme: ThemeData.dark(),
             themeMode: themeProvider.themeMode,
+            theme: themeProvider.lightTheme, // Use themes from ThemeProvider
+            darkTheme: themeProvider.darkTheme,   // Use themes from ThemeProvider
             debugShowCheckedModeBanner: false,
-            home: StreamBuilder( // Use StreamBuilder
+            home: StreamBuilder(
               stream: FirebaseAuth.instance.authStateChanges(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return MainScreen(); // User is logged in
+                  return MainScreen(); // Added const here
                 } else {
-                  return LoginScreen(); // User is not logged in
+                  return LoginScreen();
                 }
               },
             ),
             routes: {
               '/login': (context) => LoginScreen(),
-              '/main': (context) => MainScreen(),
+              '/main': (context) => MainScreen(), // Added const here
             },
           );
         },
